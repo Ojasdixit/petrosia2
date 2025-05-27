@@ -41,8 +41,9 @@ import PrivacyPolicyPage from "@/pages/privacy-policy-page";
 import TermsOfUsePage from "@/pages/terms-of-use-page";
 import RefundPolicyPage from "@/pages/refund-policy-page";
 import FranchisePage from "@/pages/franchise-page";
-import VideoTesterPage from "./pages/video-tester-page";
-import VideoTestPage from "./pages/video-test-page";
+// Video test pages removed - they no longer exist
+// import VideoTesterPage from "./pages/video-tester-page";
+// import VideoTestPage from "./pages/video-test-page";
 import BlogPage from "@/pages/blog-page";
 import BlogNewPostPage from "@/pages/blog-new-post-page";
 import BlogManagePage from "@/pages/blog-manage-page";
@@ -112,8 +113,9 @@ function Router() {
           <ProtectedRoute path="/admin/dashboard" role="admin" component={AdminDashboard} />
           {/* Admin adoption management route removed as requested */}
           {/* <ProtectedRoute path="/admin/add-adoption" role="admin" component={AdminAddAdoptionPage} /> */}
-          <Route path="/video-tester" component={VideoTesterPage} />
-          <Route path="/video-test" component={VideoTestPage} />
+          {/* Video test routes removed - components no longer exist */}
+          {/* <Route path="/video-tester" component={VideoTesterPage} /> */}
+          {/* <Route path="/video-test" component={VideoTestPage} /> */}
           <Route component={NotFound} />
         </Switch>
       </main>
