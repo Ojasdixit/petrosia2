@@ -1,0 +1,76 @@
+# Petrosia.in SEO-optimized robots.txt
+# Last updated: April 27, 2025
+
+# Default rules for all user agents
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /__replco/
+Disallow: /*.json$
+Disallow: /*?city=*&*
+Allow: /*?city=*
+
+# Google-specific user agents
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Googlebot-Image
+Allow: /uploads/
+Allow: /images/
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.png$
+Allow: /*.webp$
+
+User-agent: Googlebot-Mobile
+Allow: /
+
+# Bing-specific user agents
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# Rules for other major search engines
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2
+
+User-agent: YandexBot
+Allow: /
+Crawl-delay: 2
+
+# XML sitemap index (primary reference)
+Sitemap: https://petrosia.in/sitemap_index.xml
+
+# Individual XML sitemaps (as backup references)
+Sitemap: https://petrosia.in/sitemap.xml
+Sitemap: https://petrosia.in/services.xml
+Sitemap: https://petrosia.in/pets.xml
+Sitemap: https://petrosia.in/dog-breeds.xml
+Sitemap: https://petrosia.in/blog.xml
+Sitemap: https://petrosia.in/listings.xml
+
+# HTML sitemap for human visitors
+# Note: Although not standard in robots.txt, some crawlers will recognize this
+Sitemap: https://petrosia.in/sitemap.html
+
+# Handles common URL variations for cities
+# This helps search engines understand canonical versions
+Allow: /*?city=delhi
+Allow: /*?city=mumbai
+Allow: /*?city=bangalore
+Allow: /*?city=kolkata
+Allow: /*?city=ahmedabad
+Allow: /*?city=pune
+Allow: /*?city=chennai
+Allow: /*?city=hyderabad
+Allow: /*?city=jaipur

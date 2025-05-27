@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+dist
+
+# Build outputs
+.DS_Store
+server/public
+vite.config.ts.*
+
+# Archive files
+*.tar.gz
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+*.tgz
+
+# Large binary files
+.data/db-backups/*
+.data/media/*
+public/uploads/*
+temp-uploads/*
+attached_assets/*
+
+# Media files
+*.mp4
+*.mp3
+*.wav
+
+# Keep necessary image files
+# *.png
+# *.jpg
+# *.jpeg
+# *.webp
+# *.gif
+
+# Environment variables and secrets
+.env
+.env.local
+.env.development
+.env.test
+.env.production

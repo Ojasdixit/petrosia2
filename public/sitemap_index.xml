@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>https://petrosia.in/sitemap.xml</loc>
+    <lastmod>2025-05-27</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://petrosia.in/services.xml</loc>
+    <lastmod>2025-05-27</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://petrosia.in/pets.xml</loc>
+    <lastmod>2025-05-27</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://petrosia.in/dog-breeds.xml</loc>
+    <lastmod>2025-05-27</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://petrosia.in/blog.xml</loc>
+    <lastmod>2025-05-27</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://petrosia.in/listings.xml</loc>
+    <lastmod>2025-05-27</lastmod>
+  </sitemap>
+</sitemapindex>
