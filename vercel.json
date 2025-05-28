@@ -8,7 +8,13 @@
     {
       "src": "package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "dist/public" }
+      "config": { 
+        "distDir": "dist/public",
+        "env": {
+          "VITE_SUPABASE_URL": "$SUPABASE_URL",
+          "VITE_SUPABASE_ANON_KEY": "$SUPABASE_ANON_KEY"
+        }
+      }
     }
   ],
   "routes": [
@@ -24,5 +30,10 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "env": {
+    "SUPABASE_URL": "$SUPABASE_URL",
+    "SUPABASE_SERVICE_ROLE_KEY": "$SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_ANON_KEY": "$SUPABASE_ANON_KEY"
+  }
 }

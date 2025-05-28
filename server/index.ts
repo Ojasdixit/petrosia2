@@ -112,18 +112,30 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // Try to use port from environment variable, fallback to 3000 if not available
-  const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
+  // Try to use port from environment variable, fallback to 5000 if not available
+  // Using 5000 instead of 3000 to avoid common conflicts
+  const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;
   
-  server.listen(PORT, '0.0.0.0', () => {
-    log(`Server is running on port ${PORT}`);
-  }).on('error', (err: NodeJS.ErrnoException) => {
-    if (err.code === 'EADDRINUSE') {
-      log(`Port ${PORT} is in use, trying port ${Number(PORT) + 1}...`);
-      server.listen(Number(PORT) + 1, '0.0.0.0');
-    } else {
-      log(`Error starting server: ${err.message}`);
-      process.exit(1);
-    }
-  });
+  // Function to try binding to a port with a maximum number of attempts
+  const startServer = (port: number, maxAttempts: number = 3, attempt: number = 1) => {
+    server.listen(port, '0.0.0.0', () => {
+      log(`Server is running on port ${port}`);
+    }).on('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'EADDRINUSE' && attempt < maxAttempts) {
+        const nextPort = port + 1;
+        log(`Port ${port} is in use, trying port ${nextPort}... (attempt ${attempt} of ${maxAttempts})`);
+        startServer(nextPort, maxAttempts, attempt + 1);
+      } else if (err.code === 'EADDRINUSE') {
+        log(`Failed to find an available port after ${maxAttempts} attempts.`);
+        log(`Please specify a different port using the PORT environment variable.`);
+        process.exit(1);
+      } else {
+        log(`Error starting server: ${err.message}`);
+        process.exit(1);
+      }
+    });
+  };
+  
+  // Start the server with the initial port
+  startServer(PORT);
 })();
