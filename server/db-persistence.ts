@@ -1,9 +1,8 @@
 /**
  * Database persistence and recovery system
  * 
- * This file implements automatic database backup and recovery mechanisms
- * to prevent data loss in Replit environments where database connections
- * can be terminated unexpectedly.
+ * This file implements database verification and schema initialization
+ * to ensure the database is properly set up for the application.
  */
 
 import fs from 'fs';
@@ -15,19 +14,22 @@ import { sql } from 'drizzle-orm';
 
 const execAsync = promisify(exec);
 
-// Persistent data directory that survives Replit restarts
-const DATA_DIR = path.join(process.cwd(), '.data');
+// Local data directory for application storage
+const DATA_DIR = path.join(process.cwd(), 'data');
 const BACKUP_DIR = path.join(DATA_DIR, 'db-backups');
-const LATEST_BACKUP_PATH = path.join(BACKUP_DIR, 'latest_backup.sql');
-const BACKUP_SCHEDULE_MS = 1000 * 60 * 60; // Every 1 hour
+const SCHEMA_DIR = path.join(DATA_DIR, 'schema');
 
-// Ensure backup directories exist
+// Ensure data directories exist
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
 if (!fs.existsSync(BACKUP_DIR)) {
   fs.mkdirSync(BACKUP_DIR, { recursive: true });
+}
+
+if (!fs.existsSync(SCHEMA_DIR)) {
+  fs.mkdirSync(SCHEMA_DIR, { recursive: true });
 }
 
 /**
@@ -61,8 +63,9 @@ export async function createDatabaseBackup(): Promise<boolean> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupPath = path.join(BACKUP_DIR, `backup-${timestamp}.sql`);
     
-    // Create the backup
-    await execAsync(`pg_dump $DATABASE_URL > ${backupPath}`);
+    // Create the backup using properly escaped credentials for Windows
+    const dbUrl = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
+    await execAsync(`pg_dump "${dbUrl}" > "${backupPath}"`);
     
     // Create a copy as the latest backup
     fs.copyFileSync(backupPath, LATEST_BACKUP_PATH);
@@ -105,8 +108,9 @@ export async function restoreDatabaseFromBackup(): Promise<boolean> {
     await db.execute(sql`DROP SCHEMA public CASCADE`);
     await db.execute(sql`CREATE SCHEMA public`);
     
-    // Restore from backup
-    await execAsync(`psql $DATABASE_URL < ${LATEST_BACKUP_PATH}`);
+    // Restore from backup using properly escaped credentials for Windows
+    const dbUrl = process.env.SUPABASE_DB_URL || process.env.DATABASE_URL;
+    await execAsync(`psql "${dbUrl}" < "${LATEST_BACKUP_PATH}"`);
     
     console.log('Database restored successfully from backup');
     return true;
@@ -117,33 +121,42 @@ export async function restoreDatabaseFromBackup(): Promise<boolean> {
 }
 
 /**
- * Initialize the database persistence system
+ * Initialize the database connection and validate it
  */
 export async function initDatabasePersistence(): Promise<void> {
   try {
-    console.log('Initializing database persistence system...');
+    console.log('Initializing database connection...');
     
-    // Check if database is empty
-    const empty = await isDatabaseEmpty();
-    
-    if (empty) {
-      console.log('Database appears to be empty, attempting to restore from backup...');
-      await restoreDatabaseFromBackup();
-    } else {
-      console.log('Database has data, creating a backup...');
-      await createDatabaseBackup();
+    // Check if the database is accessible and has tables
+    try {
+      const empty = await isDatabaseEmpty();
+      
+      if (empty) {
+        console.log('Database appears to be empty. Tables will be created as needed.');
+      } else {
+        console.log('Database connection successful - tables exist.');
+      }
+    } catch (dbErr) {
+      console.warn('Could not verify database state:', dbErr);
+      console.log('Continuing server startup...');
     }
     
-    // Schedule regular backups
-    setInterval(async () => {
-      const dataExists = !(await isDatabaseEmpty());
-      if (dataExists) {
-        await createDatabaseBackup();
-      }
-    }, BACKUP_SCHEDULE_MS);
-    
-    console.log('Database persistence system initialized');
+    console.log('Database initialization complete');
   } catch (error) {
-    console.error('Error initializing database persistence:', error);
+    console.error('Error during database initialization:', error);
+    console.log('Continuing server startup despite database errors');
+  }
+}
+
+/**
+ * Check if PostgreSQL command line tools are available
+ */
+async function checkPgToolsAvailable(): Promise<boolean> {
+  try {
+    await execAsync('pg_dump --version');
+    await execAsync('psql --version');
+    return true;
+  } catch (error) {
+    return false;
   }
 }

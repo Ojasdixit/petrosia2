@@ -31,25 +31,36 @@ import { upload, handlePetMediaUpload, handleGeneralFileUpload } from './upload-
 // Import image optimization middleware
 import { imageOptimizerMiddleware } from './image-optimizer';
 
-// Create a persistent uploads directory using .data folder which persists across deployments
-// The .data directory is a special directory in Replit that persists between deploys
-const persistentUploadsDir = path.join(process.cwd(), '.data', 'uploads');
+// Create a persistent uploads directory using a standard folder structure
+const persistentUploadsDir = path.join(process.cwd(), 'data', 'uploads');
 if (!fs.existsSync(persistentUploadsDir)) {
   fs.mkdirSync(persistentUploadsDir, { recursive: true });
 }
 
-// Create a symlink from the persistent directory to uploads to maintain compatibility
+// Create a directory or symlink from the persistent directory to uploads to maintain compatibility
 const uploadsDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadsDir)) {
-  // Create the symlink directory
-  try {
-    fs.symlinkSync(persistentUploadsDir, uploadsDir, 'dir');
-  } catch (error) {
-    console.error('Error creating symlink, falling back to standard directory:', error);
-    fs.mkdirSync(uploadsDir, { recursive: true });
+  // On Windows, symlinks require admin privileges, so we'll just create a directory
+  console.log('Creating uploads directory...');
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  
+  // Copy existing files from persistent directory if they exist
+  if (fs.existsSync(persistentUploadsDir) && fs.readdirSync(persistentUploadsDir).length > 0) {
+    console.log('Copying existing files from persistent directory...');
+    fs.readdirSync(persistentUploadsDir).forEach(file => {
+      const srcPath = path.join(persistentUploadsDir, file);
+      const destPath = path.join(uploadsDir, file);
+      if (fs.statSync(srcPath).isDirectory()) {
+        if (!fs.existsSync(destPath)) {
+          fs.mkdirSync(destPath, { recursive: true });
+        }
+      } else {
+        fs.copyFileSync(srcPath, destPath);
+      }
+    });
   }
 } else if (!fs.lstatSync(uploadsDir).isSymbolicLink()) {
-  // If uploads directory exists but is not a symlink, move its contents to persistent dir and replace with symlink
+  // If uploads directory exists but is not a symlink, move its contents to persistent dir
   try {
     // Get contents of uploads directory
     const contents = fs.readdirSync(uploadsDir);
@@ -143,14 +154,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add image optimization route
   app.use('/optimized', imageOptimizerMiddleware);
 
-  // Serve uploaded files from all possible locations with persistent .data directory having highest priority
+  // Serve uploaded files from all possible locations with our data directory having highest priority
   app.use('/uploads', 
     setStaticCacheHeaders(CACHE_DURATIONS.IMAGES),
-    express.static(path.join(process.cwd(), '.data', 'media'))
+    express.static(path.join(process.cwd(), 'data', 'media'))
   );
   app.use('/uploads', 
     setStaticCacheHeaders(CACHE_DURATIONS.IMAGES),
-    express.static(path.join(process.cwd(), '.data', 'uploads'))
+    express.static(path.join(process.cwd(), 'data', 'uploads'))
   );
   app.use('/uploads', 
     setStaticCacheHeaders(CACHE_DURATIONS.IMAGES),
